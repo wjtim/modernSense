@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Sentiment Analysis</h1>
+    <div class="input">
+    <form method="post">
+        <textarea name="user_rating" rows="4" cols="50" placeholder="Rating Recieved" required></textarea><br>
+        <textarea name="user_input" rows="4" cols="50" placeholder="Review Recieved" required></textarea><br>
+        <input type="submit" value="Analyze">
+    </form>
+    </div>
+    {% if sentiment_results and user_expected %}
+        {% if sentiment_results.scoring.label == user_expected.score %}
+            <div class="expectedResult">
+                <h2>Sentiment Scores:</h2>
+                <p><strong>Model:</strong> nlptown/bert-base-multilingual-uncased-sentiment</p>
+                <p>Model Expected Rating: <strong>{{ sentiment_results.scoring.label }}</strong></p>
+                <p>Confidence: <strong>{{ sentiment_results.scoring.score }} / 1</strong></p>
+                
+                <p><strong>Model:</strong>distilbert-base-uncased-finetuned-sst-2-english</p>
+                <p>Sentiment: <strong>{{ sentiment_results.sentiment.label }}</strong></p>
+                <p>Score Confidence: <strong>{{ sentiment_results.sentiment.score }} / 1</strong></p>
+
+                <h2>User Recieved Scores</h2>
+                <p>Recieved Score: <strong>{{user_expected.score}}</strong></p>
+            </div>
+        {% else %}
+            <div class="badResult">
+                <h2>Sentiment Scores:</h2>
+                <p><strong>Model:</strong> nlptown/bert-base-multilingual-uncased-sentiment</p>
+                <p>Model Expected Rating: <strong>{{ sentiment_results.scoring.label }}</strong></p>
+                <p>Confidence: <strong>{{ sentiment_results.scoring.score }} / 1</strong></p>
+                
+                <p><strong>Model:</strong>distilbert-base-uncased-finetuned-sst-2-english</p>
+                <p>Sentiment: <strong>{{ sentiment_results.sentiment.label }}</strong></p>
+                <p>Score Confidence: <strong>{{ sentiment_results.sentiment.score }} / 1</strong></p>
+
+                <h2>User Recieved Scores</h2>
+                <p>Recieved Score: <strong>{{user_expected.score}}</strong></p>
+            </div>
+        {% endif %}
+    {% else %}
+    <div>Input Failed</div>
+    {% endif %}
+</body>
+</html>
