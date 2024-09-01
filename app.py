@@ -17,6 +17,7 @@ def index():
     sentiment_results = {}
     user_expected = {}
     if request.method == "POST":
+        
         user_input = request.form["user_input"]
         user_rating = request.form["user_rating"]
         
