@@ -9,17 +9,15 @@
 <body>
     <h1>Sentiment Analysis</h1>
     <div class="input">
+    <p>Welcome {{current_user.username}}!</p>
+    <p>Enter review recieved</p>
     <form method="post">
         <input class="userRating"type="number" name="user_rating" min="1" max="5" placeholder="Rating Recieved" required></input><br>
         <textarea class="userReview" name="user_input" rows="4" cols="50" placeholder="Review Recieved" required></textarea><br>
         <input type="submit" value="Analyze">
     </form>
-    </div>
-    <div>
-        <form method = "POST" enctype="multipart/form-data" action = "/">             
-            <input type="file" name="file" accept=".csv" required>
-            <input type = "submit" value="Upload">  
-        </form>
+    <a href="{{ url_for('uploadFile') }}">Upload a CSV Instead</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
     </div>
     {% if sentiment_results and user_expected %}
         {% if sentiment_results.scoring.label == user_expected.score %}
@@ -51,8 +49,6 @@
                 <p>Recieved User Rating: <strong class="invalid">{{user_expected.score}}</strong></p>
             </div>
         {% endif %}
-    {% else %}
-    <div>Input Failed</div>
     {% endif %}
 </body>
 </html>
