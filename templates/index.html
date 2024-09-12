@@ -51,5 +51,16 @@
         </div>
         {% endif %}
     {% endif %}
+    {% if csv_data and stats %}
+        <h1>CSV Upload Results</h1>
+        <h2>Processed CSV Data:</h2>
+        <pre>{{ csv_data }}</pre>
+        <h2>Statistics:</h2>
+        <p>Average nlptown Score: {{ stats.nlptown_avg_score }}</p>
+        <p>Average distilbert Score: {{ stats.distilbert_avg_score }}</p>
+        <p>Average User Rating: {{ stats.average_rating }}</p>
+        <p>Average nlptown Star Rating: {{ stats.average_nlptown_star_rating }}</p>
+        <p>Average Absolute Difference Between User Rating and nlptown Rating: {{ stats.rating_vs_nlptown }}</p>
+    {% endif %}
 </body>
 </html>

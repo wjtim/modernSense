@@ -165,7 +165,7 @@ def upload_file():
         csv_buffer.seek(0)
         csv_data = csv_buffer.getvalue()
         
-        return render_template("upload_results.html", csv_data=csv_data, stats=stats)
+        return render_template("index.html", csv_data=csv_data, stats=stats)
     
     print("No file uploaded or file format is incorrect.")
     return redirect(url_for("index"))
