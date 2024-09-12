@@ -1,19 +1,38 @@
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
-    justify-content: center;
-    align-items: center;
+}
+
+h1 {
+    color: #333;
 }
 
 form {
     margin-bottom: 20px;
 }
 
-.input {
-    justify-content: center;
-    align-items: center;
+.rating{
+    min-width: 20%;
 }
 
+.review{
+    min-width: 20%;
+}
+
+.upload{
+    padding: 5px;
+    border-bottom: 1px solid #4CAF50;
+}
+
+.analyzer{
+    padding: 5px;
+    border-bottom: 1px solid #4CAF50;
+}
+
+.logout{
+    padding: 5px;
+    border-bottom: 1px solid #4CAF50;
+}
 .expectedResult {
     margin-top: 20px;
     padding: 10px;
@@ -30,22 +49,16 @@ form {
     background-color: lightcoral;
 }
 
-.userRating {
-    max-width: 100%;
-    min-width: 180px;
+.result table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-.userReview {
-    max-width: 100%;
-}
-.valid {
-    color:black;
+.result th, .result td {
+    border: 1px solid #ddd;
+    padding: 8px;
 }
 
-.invalid {
-    color: black;
-}
-
-.input{
-    display: flexbox;
+.result th {
+    background-color: #f4f4f4;
 }

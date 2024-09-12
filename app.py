@@ -1,19 +1,24 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_cors import CORS
 from transformers import pipeline
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 import pandas as pd
-import numpy
+import io
 import os
 
-
-
-print(numpy.__version__)
 app = Flask(__name__)
+CORS(app)
 load_dotenv()
+#App configs from environment variables
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('DATABASE_URL')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+#SQLAlchemy setup
+db = SQLAlchemy(app)
 
 # Initialize sentiment analysis pipeline
 scoring_model_name = "nlptown/bert-base-multilingual-uncased-sentiment"
@@ -21,19 +26,12 @@ sentiment_model_name = "distilbert-base-uncased-finetuned-sst-2-english"
 scoring_analyzer = pipeline("sentiment-analysis", model=scoring_model_name)
 sentiment_analyzer = pipeline("sentiment-analysis", model=sentiment_model_name)
 
-UPLOAD_FOLDER = os.path.join('staticFiles', 'uploads')
-ALLOWED_EXTENSIONS = {'csv'}
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('DATABASE_URL')
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-
-db = SQLAlchemy(app)
-
+#Flask-Login setup
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+#User Models
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
@@ -44,14 +42,21 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-
+    
+#Initialize db models
 with app.app_context():
     db.create_all()
 
+# Flask-Login user loader
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+#CSV Filetype verification method
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'csv'}
+
+# Route to handle login
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
@@ -122,33 +127,48 @@ def index():
 
 @app.route("/upload", methods=["GET", "POST"])
 @login_required
-def uploadFile():
-    if request.method == 'POST':
-      # upload file flask
-        f = request.files.get('file')
- 
-        # Extracting uploaded file name
-        data_filename = secure_filename(f.filename)
- 
-        f.save(os.path.join(app.config['UPLOAD_FOLDER'],
-                            data_filename))
- 
-        session['uploaded_data_file_path'] = os.path.join(app.config['UPLOAD_FOLDER'], data_filename)
-        return render_template('uploadSuccess.html')
-    return render_template("upload.html")
+def upload_file():
+    file = request.files.get('file')
+    sentiment_results = []
+    stats = {}
+    print("Upload route taken")
+    if file and allowed_file(file.filename):
+        print("File received")
+        # Read and process CSV file
+        file_content = file.read().decode('utf-8')
+        df = pd.read_csv(io.StringIO(file_content))
+        
+        # Check for required columns
+        if 'review' not in df.columns or 'rating' not in df.columns:
+            print("CSV must contain 'review' and 'rating' columns.")
+            return redirect(url_for("index"))
+        
+        # Process reviews and ratings
+        df['nlptown_label'] = df['review'].apply(lambda x: scoring_analyzer(x)[0]['label'])
+        df['nlptown_score'] = df['review'].apply(lambda x: scoring_analyzer(x)[0]['score'])
+        df['distilbert_label'] = df['review'].apply(lambda x: sentiment_analyzer(x)[0]['label'])
+        df['distilbert_score'] = df['review'].apply(lambda x: sentiment_analyzer(x)[0]['score'])
+        
+        # Map sentiment score to star rating (assuming score is normalized between 0 and 1)
+        df['nlptown_star_rating'] = df['nlptown_score'].apply(lambda x: round(x * 4) + 1)
+        
+        # Calculate statistics
+        stats['nlptown_avg_score'] = df['nlptown_score'].mean()
+        stats['distilbert_avg_score'] = df['distilbert_score'].mean()
+        stats['average_rating'] = df['rating'].mean()
+        stats['average_nlptown_star_rating'] = df['nlptown_star_rating'].mean()
+        stats['rating_vs_nlptown'] = ((df['rating'] - df['nlptown_star_rating']).abs().mean())
 
-@app.route('/show_data')
-@login_required
-def showData():
-    # Uploaded File Path
-    data_file_path = session.get('uploaded_data_file_path', None)
-    # read csv
-    uploaded_df = pd.read_csv(data_file_path,
-                              encoding='utf-8')
-    # Converting to html Table
-    uploaded_df_html = uploaded_df.to_html()
-    return render_template('displayCSV.html',
-                           data_var=uploaded_df_html)
+        # Convert the DataFrame to CSV for display
+        csv_buffer = io.StringIO()
+        df.to_csv(csv_buffer, index=False)
+        csv_buffer.seek(0)
+        csv_data = csv_buffer.getvalue()
+        
+        return render_template("upload_results.html", csv_data=csv_data, stats=stats)
+    
+    print("No file uploaded or file format is incorrect.")
+    return redirect(url_for("index"))
 
 if __name__ == "__main__":
     app.run(debug=True)

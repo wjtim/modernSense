@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Upload Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>CSV Upload Results</h1>
+    <h2>Processed CSV Data:</h2>
+    <pre>{{ csv_data }}</pre>
+    <h2>Statistics:</h2>
+    <p>Average nlptown Score: {{ stats.nlptown_avg_score }}</p>
+    <p>Average distilbert Score: {{ stats.distilbert_avg_score }}</p>
+    <p>Average User Rating: {{ stats.average_rating }}</p>
+    <p>Average nlptown Star Rating: {{ stats.average_nlptown_star_rating }}</p>
+    <p>Average Absolute Difference Between User Rating and nlptown Rating: {{ stats.rating_vs_nlptown }}</p>
+</body>
+</html>

@@ -8,46 +8,47 @@
 </head>
 <body>
     <h1>Sentiment Analysis</h1>
-    <div class="input">
-    <p>Welcome {{current_user.username}}!</p>
-    <p>Enter review recieved</p>
-    <form method="post">
-        <input class="userRating"type="number" name="user_rating" min="1" max="5" placeholder="Rating Recieved" required></input><br>
-        <textarea class="userReview" name="user_input" rows="4" cols="50" placeholder="Review Recieved" required></textarea><br>
+    <form class="analyzer" method="post" action="{{ url_for('index') }}">
+        <input class="rating" name="user_rating" type="number" min="0" max="5" placeholder="Rating Recieved /5" onkeyup=enforceMinMax(this) required="required"><br><br>
+        <textarea class="review" name="user_input" rows="4" cols="50" placeholder="Enter text here..." required="required"></textarea><br><br>
         <input type="submit" value="Analyze">
     </form>
-    <a href="{{ url_for('uploadFile') }}">Upload a CSV Instead</a>
-    <a href="{{ url_for('logout') }}">Logout</a>
-    </div>
+    <form class="upload" method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv"><br><br>
+        <input type="submit" value="Upload CSV">
+    </form>
+    <form class="logout" action="{{ url_for('logout') }}">
+        <input type="submit" value="Logout">
+    </form>
     {% if sentiment_results and user_expected %}
-        {% if sentiment_results.scoring.label == user_expected.score %}
-            <div class="expectedResult">
-                <h2>Sentiment Scores:</h2>
-                <p><strong>Model:</strong> nlptown/bert-base-multilingual-uncased-sentiment</p>
-                <p>Model Expected Rating: <strong class="valid">{{ sentiment_results.scoring.label }}</strong></p>
-                <p>Confidence: <strong class="valid">{{ sentiment_results.scoring.score }} / 1</strong></p>
-                
-                <p><strong>Model:</strong>distilbert-base-uncased-finetuned-sst-2-english</p>
-                <p>Sentiment: <strong class="valid">{{ sentiment_results.sentiment.label }}</strong></p>
-                <p>Confidence: <strong class="valid">{{ sentiment_results.sentiment.score }} / 1</strong></p>
+    {% if sentiment_results.scoring.label == user_expected.score %}
+        <div class="expectedResult">
+            <h2>Sentiment Scores:</h2>
+            <p><strong>Model:</strong> nlptown/bert-base-multilingual-uncased-sentiment</p>
+            <p>Model Expected Rating: <strong class="valid">{{ sentiment_results.scoring.label }}</strong></p>
+            <p>Confidence: <strong class="valid">{{ sentiment_results.scoring.score }} / 1</strong></p>
+            
+            <p><strong>Model:</strong>distilbert-base-uncased-finetuned-sst-2-english</p>
+            <p>Sentiment: <strong class="valid">{{ sentiment_results.sentiment.label }}</strong></p>
+            <p>Confidence: <strong class="valid">{{ sentiment_results.sentiment.score }} / 1</strong></p>
 
-                <h2>User Recieved Scores</h2>
-                <p>Recieved Score: <strong class="valid">{{user_expected.score}}</strong></p>
-            </div>
-        {% else %}
-            <div class="badResult">
-                <h2>Sentiment Scores:</h2>
-                <p><strong>Model:</strong> nlptown/bert-base-multilingual-uncased-sentiment</p>
-                <p>Model Expected Rating: <strong class="invalid">{{ sentiment_results.scoring.label }}</strong></p>
-                <p>Confidence: <strong class="invalid">{{ sentiment_results.scoring.score }} / 1</strong></p>
-                
-                <p><strong>Model:</strong>distilbert-base-uncased-finetuned-sst-2-english</p>
-                <p>Sentiment: <strong class="invalid">{{ sentiment_results.sentiment.label }}</strong></p>
-                <p>Confidence: <strong class="invalid">{{ sentiment_results.sentiment.score }} / 1</strong></p>
+            <h2>User Recieved Scores</h2>
+            <p>Recieved Score: <strong class="valid">{{user_expected.score}}</strong></p>
+        </div>
+    {% else %}
+        <div class="badResult">
+            <h2>Sentiment Scores:</h2>
+            <p><strong>Model:</strong> nlptown/bert-base-multilingual-uncased-sentiment</p>
+            <p>Model Expected Rating: <strong class="invalid">{{ sentiment_results.scoring.label }}</strong></p>
+            <p>Confidence: <strong class="invalid">{{ sentiment_results.scoring.score }} / 1</strong></p>
+            
+            <p><strong>Model:</strong>distilbert-base-uncased-finetuned-sst-2-english</p>
+            <p>Sentiment: <strong class="invalid">{{ sentiment_results.sentiment.label }}</strong></p>
+            <p>Confidence: <strong class="invalid">{{ sentiment_results.sentiment.score }} / 1</strong></p>
 
-                <h2>User Recieved Scores</h2>
-                <p>Recieved User Rating: <strong class="invalid">{{user_expected.score}}</strong></p>
-            </div>
+            <h2>User Recieved Scores</h2>
+            <p>Recieved User Rating: <strong class="invalid">{{user_expected.score}}</strong></p>
+        </div>
         {% endif %}
     {% endif %}
 </body>
