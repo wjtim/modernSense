@@ -4,7 +4,7 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from transformers import pipeline
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
-from fileinput import filename
+from dotenv import load_dotenv
 import pandas as pd
 import numpy
 import os
@@ -13,6 +13,7 @@ import os
 
 print(numpy.__version__)
 app = Flask(__name__)
+load_dotenv()
 
 # Initialize sentiment analysis pipeline
 scoring_model_name = "nlptown/bert-base-multilingual-uncased-sentiment"
@@ -24,16 +25,14 @@ UPLOAD_FOLDER = os.path.join('staticFiles', 'uploads')
 ALLOWED_EXTENSIONS = {'csv'}
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
-app.config['SECRET_KEY'] = 'thisisasecretkey'
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('DATABASE_URL')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 db = SQLAlchemy(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
-
-app.secret_key = 'Super secret Flask key'
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -111,6 +110,7 @@ def index():
         }
         distilbert_result = sentiment_analyzer(user_input)[0]
         sentiment_results['sentiment'] = {
+
             "label": distilbert_result["label"],
             "score": round(distilbert_result["score"], 4)
         }
@@ -144,7 +144,7 @@ def showData():
     data_file_path = session.get('uploaded_data_file_path', None)
     # read csv
     uploaded_df = pd.read_csv(data_file_path,
-                              encoding='unicode_escape')
+                              encoding='utf-8')
     # Converting to html Table
     uploaded_df_html = uploaded_df.to_html()
     return render_template('displayCSV.html',
