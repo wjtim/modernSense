@@ -1,9 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_cors import CORS
 from transformers import pipeline
-from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 import pandas as pd
@@ -128,10 +127,15 @@ def index():
 @app.route("/upload", methods=["GET", "POST"])
 @login_required
 def upload_file():
+    
+    #File Upload recieved from Form
     file = request.files.get('file')
-    sentiment_results = []
     stats = {}
+
+    #Debug print line
     print("Upload route taken")
+
+    #Check file format of upload for CSV
     if file and allowed_file(file.filename):
         print("File received")
         # Read and process CSV file
@@ -164,11 +168,31 @@ def upload_file():
         df.to_csv(csv_buffer, index=False)
         csv_buffer.seek(0)
         csv_data = csv_buffer.getvalue()
-        
+
+        session['csv_data'] = csv_data
+
         return render_template("index.html", csv_data=csv_data, stats=stats)
     
     print("No file uploaded or file format is incorrect.")
     return redirect(url_for("index"))
 
+@app.route('/download_csv')
+@login_required
+def download_csv():
+    # Check if CSV data is available in session
+    csv_data = session.get('csv_data')
+    if csv_data:
+        # Return the CSV file as a downloadable response
+        return send_file(
+            io.BytesIO(csv_data.encode()),  # Convert string to bytes
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name='analysed_reviews.csv'
+        )
+    else:
+        print("CSV Data not found")
+        flash("No CSV available for download.")
+        return redirect(url_for("index"))
+    
 if __name__ == "__main__":
     app.run(debug=True)
