@@ -59,7 +59,7 @@ def allowed_file(filename):
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('input'))
     if request.method == "POST":
         username = request.form['username']
         password = request.form['password']
@@ -67,7 +67,7 @@ def login():
         if user and user.check_password(password):
             login_user(user)
             flash("Logged in successfully!")
-            return redirect(url_for("index"))
+            return redirect(url_for("input"))
         else:
             flash("Invalid username or password")
     return render_template("login.html")
@@ -75,7 +75,7 @@ def login():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('input'))
     if request.method == "POST":
         username = request.form['username']
         password = request.form['password']
@@ -95,11 +95,15 @@ def register():
 def logout():
     logout_user()
     flash("Logged out successfully!")
-    return redirect(url_for("login"))
+    return redirect(url_for("home"))
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
+def home():
+    return render_template("landing.html")
+
+@app.route("/input", methods=["GET", "POST"])
 @login_required
-def index():
+def input():
     sentiment_results = {}
     user_expected = {}
     if request.method == "POST":
@@ -122,7 +126,7 @@ def index():
             "score": user_rating + " stars"
         }
         print(user_input)
-    return render_template("index.html", sentiment_results=sentiment_results, user_expected=user_expected)
+    return render_template("input.html", sentiment_results=sentiment_results, user_expected=user_expected)
 
 @app.route("/upload", methods=["GET", "POST"])
 @login_required
@@ -144,21 +148,21 @@ def upload_file():
         # Check for required columns
         if 'review' not in df.columns or 'rating' not in df.columns:
             print("CSV must contain 'review' and 'rating' columns.")
-            return redirect(url_for("index"))
+            return redirect(url_for("input"))
         
         # Process reviews and ratings
-        df['nlptown_label'] = df['review'].apply(lambda x: scoring_analyzer(x)[0]['label'])
-        df['nlptown_score'] = df['review'].apply(lambda x: scoring_analyzer(x)[0]['score'])
-        df['distilbert_label'] = df['review'].apply(lambda x: sentiment_analyzer(x)[0]['label'])
-        df['distilbert_score'] = df['review'].apply(lambda x: sentiment_analyzer(x)[0]['score'])
+        df['expected_score'] = df['review'].apply(lambda x: scoring_analyzer(x)[0]['label'])
+        df['scoring_confidence'] = df['review'].apply(lambda x: scoring_analyzer(x)[0]['score'])
+        df['evaluated_sentiment'] = df['review'].apply(lambda x: sentiment_analyzer(x)[0]['label'])
+        df['sentiment_confidence'] = df['review'].apply(lambda x: sentiment_analyzer(x)[0]['score'])
         
         # Convert the DataFrame to a list of lists for rendering in HTML
         columns = df.columns.tolist()  # Extract the column headers
         rows = df.values.tolist()  # Extract the rows of data
 
         # Calculate statistics
-        stats['nlptown_avg_score'] = df['nlptown_score'].mean()
-        stats['distilbert_avg_score'] = df['distilbert_score'].mean()
+        stats['nlptown_avg_score'] = df['scoring_confidence'].mean()
+        stats['distilbert_avg_score'] = df['sentiment_confidence'].mean()
         stats['average_rating'] = df['rating'].mean()
 
         # Convert the DataFrame to CSV for display
@@ -167,10 +171,10 @@ def upload_file():
         csv_buffer.seek(0)
         session['csv_data'] = csv_buffer.getvalue()
 
-        return render_template("index.html", columns=columns, rows=rows, stats=stats)
+        return render_template("input.html", columns=columns, rows=rows, stats=stats)
     
     print("No file uploaded or file format is incorrect.")
-    return redirect(url_for("index"))
+    return redirect(url_for("input"))
 
 @app.route('/download_csv')
 @login_required
@@ -188,7 +192,7 @@ def download_csv():
     else:
         print("CSV Data not found")
         flash("No CSV available for download.")
-        return redirect(url_for("index"))
+        return redirect(url_for("input"))
     
 if __name__ == "__main__":
     app.run(debug=True)

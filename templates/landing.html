@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Welcome to the Sentiment Analysis Tool</h1>
+        <p>Your go-to solution for analyzing and understanding feedback.</p>
+    </header>
+    {% if current_user.is_authenticated %}
+    <p>Hello, {{ current_user.username }}!</p>
+    <form class="navigate" action="{{ url_for('input') }}">
+        <input type="submit" value="Start Analysis">
+    </form>
+    {% else %}
+    <p>Already have an account?</p>
+    <form class="login" action="{{ url_for('login') }}">
+        <input type="submit" value="Login">
+    </form>
+    <p>Otherwise</p>
+    <form class="register" action="{{ url_for('register') }}">
+        <input type="submit" value="Register">
+    </form>
+    {% endif %}
+
+    <main>
+        <section id="intro">
+            <h2>About the Tool</h2>
+            <p>Our Sentiment Analysis Tool helps you analyze user reviews and feedback quickly and effectively. Whether you are handling a single review or processing a large batch of CSV files, our tool provides insights into sentiment and key metrics.</p>
+        </section>
+
+        <section id="features">
+            <h2>Features</h2>
+            <ul>
+                <li><strong>Manual Review Input:</strong> Enter individual reviews to analyze their sentiment.</li>
+                <li><strong>Batch Processing:</strong> Upload CSV files with reviews for bulk analysis.</li>
+                <li><strong>Sentiment Scores:</strong> Get detailed sentiment scores and statistics for each review.</li>
+                <li><strong>Download Results:</strong> View and download processed results in CSV format.</li>
+            </ul>
+        </section>
+
+        <section id="instructions">
+            <h2>How to Use</h2>
+            <ol>
+                <li>Upload a CSV file containing reviews for batch processing.</li>
+                <li>Or, Manually input a review for immediate sentiment analysis.</li>
+            </ol>
+        </section>
+
+        <section id="contact">
+            <h2>Contact Us</h2>
+            <p>If you have any questions or need support, feel free to reach out to us at <a href="mailto:support@example.com">support@example.com</a>.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Sentiment Analysis Tool. All rights reserved.</p>
+    </footer>
+</body>
+</html>

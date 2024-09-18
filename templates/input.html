@@ -9,7 +9,7 @@
 </head>
 <body>
     <h1>Sentiment Analysis</h1>
-    <form class="analyzer" method="post" action="{{ url_for('index') }}">
+    <form class="analyzer" method="post" action="{{ url_for('input') }}">
         <input class="rating" name="user_rating" type="number" min="0" max="5" placeholder="Rating Recieved /5" onkeyup=enforceMinMax(this) required="required"><br><br>
         <textarea class="review" name="user_input" rows="4" cols="50" placeholder="Enter text here..." required="required"></textarea><br><br>
         <input type="submit" value="Analyze">
