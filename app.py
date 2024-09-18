@@ -141,7 +141,6 @@ def upload_file():
         # Read and process CSV file
         file_content = file.read().decode('utf-8')
         df = pd.read_csv(io.StringIO(file_content))
-        
         # Check for required columns
         if 'review' not in df.columns or 'rating' not in df.columns:
             print("CSV must contain 'review' and 'rating' columns.")
@@ -153,25 +152,22 @@ def upload_file():
         df['distilbert_label'] = df['review'].apply(lambda x: sentiment_analyzer(x)[0]['label'])
         df['distilbert_score'] = df['review'].apply(lambda x: sentiment_analyzer(x)[0]['score'])
         
-        # Map sentiment score to star rating (assuming score is normalized between 0 and 1)
-        df['nlptown_star_rating'] = df['nlptown_score'].apply(lambda x: round(x * 4) + 1)
-        
+        # Convert the DataFrame to a list of lists for rendering in HTML
+        columns = df.columns.tolist()  # Extract the column headers
+        rows = df.values.tolist()  # Extract the rows of data
+
         # Calculate statistics
         stats['nlptown_avg_score'] = df['nlptown_score'].mean()
         stats['distilbert_avg_score'] = df['distilbert_score'].mean()
         stats['average_rating'] = df['rating'].mean()
-        stats['average_nlptown_star_rating'] = df['nlptown_star_rating'].mean()
-        stats['rating_vs_nlptown'] = ((df['rating'] - df['nlptown_star_rating']).abs().mean())
 
         # Convert the DataFrame to CSV for display
         csv_buffer = io.StringIO()
         df.to_csv(csv_buffer, index=False)
         csv_buffer.seek(0)
-        csv_data = csv_buffer.getvalue()
+        session['csv_data'] = csv_buffer.getvalue()
 
-        session['csv_data'] = csv_data
-
-        return render_template("index.html", csv_data=csv_data, stats=stats)
+        return render_template("index.html", columns=columns, rows=rows, stats=stats)
     
     print("No file uploaded or file format is incorrect.")
     return redirect(url_for("index"))

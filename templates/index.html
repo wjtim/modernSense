@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentiment Analysis</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
 </head>
 <body>
     <h1>Sentiment Analysis</h1>
@@ -51,10 +52,28 @@
         </div>
         {% endif %}
     {% endif %}
-    {% if csv_data and stats %}
+    {% if stats and columns and rows %}
         <h1>CSV Upload Results</h1>
         <h2>Processed CSV Data:</h2>
-        <pre>{{ csv_data }}</pre>
+        <!-- Table to display CSV content -->
+        <table id="csvTable" class="display">
+            <thead>
+                <tr>
+                    {% for col in columns %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    {% for cell in row %}
+                    <td>{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         <form class="download" action="{{ url_for('download_csv') }}">
             <input type="submit" value="Download Modified CSV">
         </form>
@@ -62,8 +81,21 @@
         <p>Average Model Score Confidence: {{ stats.nlptown_avg_score }}</p>
         <p>Average Sentiment Confidence: {{ stats.distilbert_avg_score }}</p>
         <p>Average User Rating: {{ stats.average_rating }}</p>
-        <p>Model Percieved Average Score: {{ stats.average_nlptown_star_rating }}</p>
-        <p>Average Absolute Difference Between User Rating and nlptown Rating: {{ stats.rating_vs_nlptown }}</p>
     {% endif %}
+
+    <!-- DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Initialize DataTables with pagination
+            $('#csvTable').DataTable({
+                "paging": true,
+                "searching": true,
+                "ordering": true
+            });
+        });
+    </script>
 </body>
 </html>
