@@ -1,87 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentiment Analysis</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tailwindcss@^2.0/dist/tailwind.min.js"></script>
 </head>
-<body>
-    <h1>Sentiment Analysis</h1>
-    <form class="analyzer" method="post" action="{{ url_for('input') }}">
-        <input class="rating" name="user_rating" type="number" min="0" max="5" placeholder="Rating Recieved /5" onkeyup=enforceMinMax(this) required="required"><br><br>
-        <textarea class="review" name="user_input" rows="4" cols="50" placeholder="Enter text here..." required="required"></textarea><br><br>
-        <input type="submit" value="Analyze">
-    </form>
-    <form class="upload" method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".csv"><br><br>
-        <input type="submit" value="Upload CSV">
-    </form>
-    <form class="logout" action="{{ url_for('logout') }}">
-        <input type="submit" value="Logout">
-    </form>
-    {% if sentiment_results and user_expected %}
-    {% if sentiment_results.scoring.label == user_expected.score %}
-        <div class="expectedResult">
-            <h2>Sentiment Scores:</h2>
-            <p><strong>Model:</strong> nlptown/bert-base-multilingual-uncased-sentiment</p>
-            <p>Model Expected Rating: <strong class="valid">{{ sentiment_results.scoring.label }}</strong></p>
-            <p>Confidence: <strong class="valid">{{ sentiment_results.scoring.score }} / 1</strong></p>
-            
-            <p><strong>Model:</strong>distilbert-base-uncased-finetuned-sst-2-english</p>
-            <p>Sentiment: <strong class="valid">{{ sentiment_results.sentiment.label }}</strong></p>
-            <p>Confidence: <strong class="valid">{{ sentiment_results.sentiment.score }} / 1</strong></p>
 
-            <h2>User Recieved Scores</h2>
-            <p>Recieved Score: <strong class="valid">{{user_expected.score}}</strong></p>
-        </div>
-    {% else %}
-        <div class="badResult">
-            <h2>Sentiment Scores:</h2>
-            <p><strong>Model:</strong> nlptown/bert-base-multilingual-uncased-sentiment</p>
-            <p>Model Expected Rating: <strong class="invalid">{{ sentiment_results.scoring.label }}</strong></p>
-            <p>Confidence: <strong class="invalid">{{ sentiment_results.scoring.score }} / 1</strong></p>
-            
-            <p><strong>Model:</strong>distilbert-base-uncased-finetuned-sst-2-english</p>
-            <p>Sentiment: <strong class="invalid">{{ sentiment_results.sentiment.label }}</strong></p>
-            <p>Confidence: <strong class="invalid">{{ sentiment_results.sentiment.score }} / 1</strong></p>
+<body class="bg-gray-50 font-sans">
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold text-center text-green-600 mb-8">ModernSense</h1>
+        <!-- Logout Form -->
+        <form class="logout text-left mb-6" action="{{ url_for('logout') }}">
+            <input type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer" value="Logout">
+        </form>
+        <!-- Analyzer Form -->
+        <form class="analyzer bg-white shadow-md rounded p-6 mb-6" method="post" action="{{ url_for('input') }}">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="rating">Rating Received (/5):</label>
+                <input class="rating shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" name="user_rating" type="number" min="0" max="5" placeholder="Rating Received /5" onkeyup="enforceMinMax(this)" required="required">
+            </div>
 
-            <h2>User Recieved Scores</h2>
-            <p>Recieved User Rating: <strong class="invalid">{{user_expected.score}}</strong></p>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="review">Review:</label>
+                <textarea class="review shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" name="user_input" rows="4" placeholder="Enter text here..." required="required"></textarea>
+            </div>
+
+            <div class="text-center">
+                <input type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer" value="Analyze">
+            </div>
+        </form>
+
+        <!-- File Upload Form -->
+        <form class="upload bg-white shadow-md rounded p-6 mb-6" method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="file">Upload CSV:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="file" name="file" accept=".csv">
+            </div>
+
+            <div class="text-center">
+                <input type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer" value="Upload CSV">
+            </div>
+        </form>
+
+        <!-- Results Section -->
+        {% if sentiment_results and user_expected %}
+        <div class="results bg-white shadow-md rounded p-6">
+            {% if sentiment_results.scoring.label == user_expected.score %}
+            <div class="expectedResult">
+                <h2 class="text-2xl font-semibold mb-4">Sentiment Scores</h2>
+                <p><strong>Model:</strong> nlptown/bert-base-multilingual-uncased-sentiment</p>
+                <p>Model Expected Rating: <strong class="text-green-500">{{ sentiment_results.scoring.label }}</strong></p>
+                <p>Confidence: <strong>{{ sentiment_results.scoring.score }} / 1</strong></p>
+
+                <p><strong>Model:</strong> distilbert-base-uncased-finetuned-sst-2-english</p>
+                <p>Sentiment: <strong>{{ sentiment_results.sentiment.label }}</strong></p>
+                <p>Confidence: <strong>{{ sentiment_results.sentiment.score }} / 1</strong></p>
+
+                <h2 class="text-2xl font-semibold mt-6">User Received Scores</h2>
+                <p>Received Score: <strong class="text-green-500">{{user_expected.score}}</strong></p>
+            </div>
+            {% else %}
+            <div class="badResult">
+                <h2 class="text-2xl font-semibold mb-4">Sentiment Scores</h2>
+                <p><strong>Model:</strong> nlptown/bert-base-multilingual-uncased-sentiment</p>
+                <p>Model Expected Rating: <strong class="text-red-500">{{ sentiment_results.scoring.label }}</strong></p>
+                <p>Confidence: <strong>{{ sentiment_results.scoring.score }} / 1</strong></p>
+
+                <p><strong>Model:</strong> distilbert-base-uncased-finetuned-sst-2-english</p>
+                <p>Sentiment: <strong class="text-red-500">{{ sentiment_results.sentiment.label }}</strong></p>
+                <p>Confidence: <strong>{{ sentiment_results.sentiment.score }} / 1</strong></p>
+
+                <h2 class="text-2xl font-semibold mt-6">User Received Scores</h2>
+                <p>Received User Rating: <strong class="text-red-500">{{user_expected.score}}</strong></p>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
-    {% endif %}
-    {% if stats and columns and rows %}
-        <h1>CSV Upload Results</h1>
-        <h2>Processed CSV Data:</h2>
-        <!-- Table to display CSV content -->
-        <table id="csvTable" class="display">
-            <thead>
-                <tr>
-                    {% for col in columns %}
-                    <th>{{ col }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in rows %}
-                <tr>
-                    {% for cell in row %}
-                    <td>{{ cell }}</td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <form class="download" action="{{ url_for('download_csv') }}">
-            <input type="submit" value="Download Modified CSV">
-        </form>
-        <h2>Statistics:</h2>
-        <p>Average Model Score Confidence: {{ stats.nlptown_avg_score }}</p>
-        <p>Average Sentiment Confidence: {{ stats.distilbert_avg_score }}</p>
-        <p>Average User Rating: {{ stats.average_rating }}</p>
-    {% endif %}
+
+        <!-- Processed CSV Data -->
+        {% if stats and columns and rows %}
+        <div class="csv-results bg-white shadow-md rounded p-6 mt-6">
+            <h1 class="text-2xl font-semibold mb-4">CSV Upload Results</h1>
+
+            <!-- Stats -->
+            <div class="mt-6">
+                <h2 class="text-xl font-semibold">Statistics:</h2>
+                <p>Average Model Score Confidence: {{ stats.nlptown_avg_score }}</p>
+                <p>Average Sentiment Confidence: {{ stats.distilbert_avg_score }}</p>
+                <p>Average User Rating: {{ stats.average_rating }}</p>
+            </div>
+
+            <!-- Responsive table wrapper -->
+            <div class="overflow-x-auto">
+                <table id="csvTable" class="table-auto w-full border border-gray-300 rounded">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            {% for col in columns %}
+                            <th class="px-4 py-2">{{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr class="border-b border-gray-300">
+                            {% for cell in row %}
+                            <td class="px-4 py-2">{{ cell }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Download Button -->
+            <form class="download text-center mt-4" action="{{ url_for('download_csv') }}">
+                <input type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer" value="Download Modified CSV">
+            </form>
+
+        </div>
+        {% endif %}
+    </div>
 
     <!-- DataTables JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -91,9 +132,12 @@
         $(document).ready(function () {
             // Initialize DataTables with pagination
             $('#csvTable').DataTable({
+                "paging": false,
                 "searching": true,
+                "ordering": true
             });
         });
     </script>
 </body>
+
 </html>

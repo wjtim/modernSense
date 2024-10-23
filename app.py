@@ -151,8 +151,8 @@ def upload_file():
             return redirect(url_for("input"))
         
         # Process reviews and ratings
-        df['expected_score'] = df['review'].apply(lambda x: scoring_analyzer(x)[0]['label'])
-        df['scoring_confidence'] = round(df['review'].apply(lambda x: scoring_analyzer(x)[0]['score']*100), 2)
+        df['expected_rating'] = df['review'].apply(lambda x: scoring_analyzer(x)[0]['label'])
+        df['rating_confidence'] = round(df['review'].apply(lambda x: scoring_analyzer(x)[0]['score']*100), 2)
         df['evaluated_sentiment'] = df['review'].apply(lambda x: sentiment_analyzer(x)[0]['label'])
         df['sentiment_confidence'] = round(df['review'].apply(lambda x: sentiment_analyzer(x)[0]['score']*100), 2)
         
@@ -161,7 +161,7 @@ def upload_file():
         rows = df.values.tolist()  # Extract the rows of data
 
         # Calculate statistics
-        stats['nlptown_avg_score'] = round(df['scoring_confidence'].mean(), 2)
+        stats['nlptown_avg_score'] = round(df['rating_confidence'].mean(), 2)
         stats['distilbert_avg_score'] = round(df['sentiment_confidence'].mean(), 2)
         stats['average_rating'] = df['rating'].mean()
 

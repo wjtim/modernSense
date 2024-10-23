@@ -3,39 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentiment Analysis Tool</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>ModernSense</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <header>
-        <h1>Welcome to the Sentiment Analysis Tool</h1>
-        <p>Your go-to solution for analyzing and understanding feedback.</p>
-    </header>
-    {% if current_user.is_authenticated %}
-    <p>Hello, {{ current_user.username }}!</p>
-    <form class="navigate" action="{{ url_for('input') }}">
-        <input type="submit" value="Start Analysis">
-    </form>
-    {% else %}
-    <p>Already have an account?</p>
-    <form class="login" action="{{ url_for('login') }}">
-        <input type="submit" value="Login">
-    </form>
-    <p>Otherwise</p>
-    <form class="register" action="{{ url_for('register') }}">
-        <input type="submit" value="Register">
-    </form>
-    {% endif %}
+<body class="bg-gray-100 text-gray-800">
 
-    <main>
-        <section id="intro">
-            <h2>About the Tool</h2>
-            <p>Our Sentiment Analysis Tool helps you analyze user reviews and feedback quickly and effectively. Whether you are handling a single review or processing a large batch of CSV files, our tool provides insights into sentiment and key metrics.</p>
+    <!-- Header -->
+    <header class="bg-green-600 text-white py-6 shadow-lg">
+        <div class="container mx-auto text-center">
+            <h1 class="text-4xl font-bold">ModernSense</h1>
+            <p class="mt-2 text-lg">Find out how your customers really feel</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto py-8">
+        <!-- Greeting -->
+        <section class="mb-8 text-center">
+            {% if current_user.is_authenticated %}
+            <p class="text-xl mb-4">Hello, <span class="font-bold">{{ current_user.username }}</span>!</p>
+            <form action="{{ url_for('input') }}">
+                <input type="submit" value="Start Analysis" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700">
+            </form>
+            {% else %}
+            <p class="text-xl mb-4">Already have an account?</p>
+            <form action="{{ url_for('login') }}">
+                <input type="submit" value="Login" class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-600">
+            </form>
+            <p class="mt-4">Otherwise</p>
+            <form action="{{ url_for('register') }}">
+                <input type="submit" value="Register" class="bg-green-400 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-600">
+            </form>
+            {% endif %}
         </section>
 
-        <section id="features">
-            <h2>Features</h2>
-            <ul>
+        <!-- About Section -->
+        <section id="intro" class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-semibold mb-4">About the Tool</h2>
+            <p class="text-lg">Our Sentiment Analysis Tool helps you analyze user reviews and feedback quickly and effectively. Whether you are handling a single review or processing a large batch of CSV files, our tool provides insights into sentiment and key metrics.</p>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Features</h2>
+            <ul class="list-disc list-inside space-y-2">
                 <li><strong>Manual Review Input:</strong> Enter individual reviews to analyze their sentiment.</li>
                 <li><strong>Batch Processing:</strong> Upload CSV files with reviews for bulk analysis.</li>
                 <li><strong>Sentiment Scores:</strong> Get detailed sentiment scores and statistics for each review.</li>
@@ -43,22 +54,28 @@
             </ul>
         </section>
 
-        <section id="instructions">
-            <h2>How to Use</h2>
-            <ol>
+        <!-- Instructions Section -->
+        <section id="instructions" class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-semibold mb-4">How to Use</h2>
+            <ol class="list-decimal list-inside space-y-2 text-lg">
                 <li>Upload a CSV file containing reviews for batch processing.</li>
-                <li>Or, Manually input a review for immediate sentiment analysis.</li>
+                <li>Or, manually input a review for immediate sentiment analysis.</li>
             </ol>
         </section>
 
-        <section id="contact">
-            <h2>Contact Us</h2>
-            <p>If you have any questions or need support, feel free to reach out to us at <a href="mailto:support@example.com">support@example.com</a>.</p>
+        <!-- Contact Section -->
+        <section id="contact" class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4">Contact Us</h2>
+            <p class="text-lg">If you have any questions or need support, feel free to reach out to us at 
+                <a href="mailto:support@example.com" class="text-green-600 underline">support@example.com</a>.
+            </p>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2024 Sentiment Analysis Tool. All rights reserved.</p>
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-4 text-center">
+        <p>&copy; 2024 ModernSense. All rights reserved.</p>
     </footer>
+
 </body>
 </html>
