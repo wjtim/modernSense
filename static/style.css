@@ -71,16 +71,19 @@ form {
 
 .upload{
     padding: 5px;
+    min-width: 100%;
     border-bottom: 1px solid #4CAF50;
 }
 
 .analyzer{
     padding: 5px;
+    min-width: 100%;
     border-bottom: 1px solid #4CAF50;
 }
 
 .logout{
     padding: 5px;
+    min-width: 100%;
     border-bottom: 1px solid #4CAF50;
 }
 .expectedResult {

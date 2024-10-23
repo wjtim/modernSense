@@ -59,7 +59,7 @@ def allowed_file(filename):
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('input'))
+        return redirect(url_for('home'))
     if request.method == "POST":
         username = request.form['username']
         password = request.form['password']
@@ -75,7 +75,7 @@ def login():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('input'))
+        return redirect(url_for('home'))
     if request.method == "POST":
         username = request.form['username']
         password = request.form['password']
@@ -152,17 +152,17 @@ def upload_file():
         
         # Process reviews and ratings
         df['expected_score'] = df['review'].apply(lambda x: scoring_analyzer(x)[0]['label'])
-        df['scoring_confidence'] = df['review'].apply(lambda x: scoring_analyzer(x)[0]['score'])
+        df['scoring_confidence'] = round(df['review'].apply(lambda x: scoring_analyzer(x)[0]['score']*100), 2)
         df['evaluated_sentiment'] = df['review'].apply(lambda x: sentiment_analyzer(x)[0]['label'])
-        df['sentiment_confidence'] = df['review'].apply(lambda x: sentiment_analyzer(x)[0]['score'])
+        df['sentiment_confidence'] = round(df['review'].apply(lambda x: sentiment_analyzer(x)[0]['score']*100), 2)
         
         # Convert the DataFrame to a list of lists for rendering in HTML
         columns = df.columns.tolist()  # Extract the column headers
         rows = df.values.tolist()  # Extract the rows of data
 
         # Calculate statistics
-        stats['nlptown_avg_score'] = df['scoring_confidence'].mean()
-        stats['distilbert_avg_score'] = df['sentiment_confidence'].mean()
+        stats['nlptown_avg_score'] = round(df['scoring_confidence'].mean(), 2)
+        stats['distilbert_avg_score'] = round(df['sentiment_confidence'].mean(), 2)
         stats['average_rating'] = df['rating'].mean()
 
         # Convert the DataFrame to CSV for display
