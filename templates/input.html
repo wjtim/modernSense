@@ -8,6 +8,37 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/tailwindcss@^2.0/dist/tailwind.min.js"></script>
+    <style>
+        /* Custom Style for Drag and Drop*/
+        /* Hide the default file input */
+        .hidden-input {
+            position: absolute;
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            z-index: -1;
+        }   
+
+        /* Drag area styling */
+        .drag-area {
+            border: 2px dashed #9ca3af; /* Tailwind gray-400 */
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            transition: background-color 0.3s;
+            color: #6b7280; /* Tailwind gray-500 */
+            margin-bottom: 15px;
+        }
+
+        .drag-area:hover {
+            background-color: #e5e7eb; /* Tailwind gray-200 */
+        }
+
+        .drag-area.dragover {
+            background-color: #d1d5db; /* Tailwind gray-300 */
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50 font-sans">
@@ -36,11 +67,12 @@
 
         <!-- File Upload Form -->
         <form class="upload bg-white shadow-md rounded p-6 mb-6" method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="file">Upload CSV:</label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="file" name="file" accept=".csv">
+            <div id="drag-area" class="drag-area">
+                <p id="drag-text" class="text-gray-600">Drag and Drop CSV Here</p>
+                <p class="my-2"><strong>or</strong></p>
+                <label for="file-input" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer">Choose File</label>
+                <input id="file-input" type="file" name="file" accept=".csv" class="hidden-input" required>
             </div>
-
             <div class="text-center">
                 <input type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer" value="Upload CSV">
             </div>
@@ -83,9 +115,8 @@
 
         <!-- Processed CSV Data -->
         {% if stats and columns and rows %}
-        <div class="csv-results bg-white shadow-md rounded p-6 mt-6">
+        <div class="csv-results bg-white shadow-md rounded-lg p-6 mt-6">
             <h1 class="text-2xl font-semibold mb-4">CSV Upload Results</h1>
-
             <!-- Stats -->
             <div class="mt-6">
                 <h2 class="text-xl font-semibold">Statistics:</h2>
@@ -93,22 +124,21 @@
                 <p>Average Sentiment Confidence: {{ stats.distilbert_avg_score }}</p>
                 <p>Average User Rating: {{ stats.average_rating }}</p>
             </div>
-
             <!-- Responsive table wrapper -->
             <div class="overflow-x-auto">
-                <table id="csvTable" class="table-auto w-full border border-gray-300 rounded">
-                    <thead>
-                        <tr class="bg-gray-100">
+                <table id="csvTable" class="table-auto w-full border-collapse border border-gray-200 text-left">
+                    <thead class="bg-gray-50 text-gray-700">
+                        <tr>
                             {% for col in columns %}
-                            <th class="px-4 py-2">{{ col }}</th>
+                            <th class="px-4 py-3 border-b border-gray-200 font-semibold">{{ col }}</th>
                             {% endfor %}
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="text-gray-600">
                         {% for row in rows %}
-                        <tr class="border-b border-gray-300">
+                        <tr class="hover:bg-gray-100 border-b border-gray-200">
                             {% for cell in row %}
-                            <td class="px-4 py-2">{{ cell }}</td>
+                            <td class="px-4 py-3">{{ cell }}</td>
                             {% endfor %}
                         </tr>
                         {% endfor %}
@@ -118,9 +148,8 @@
 
             <!-- Download Button -->
             <form class="download text-center mt-4" action="{{ url_for('download_csv') }}">
-                <input type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer" value="Download Modified CSV">
+                <input type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline cursor-pointer" value="Download Modified CSV">
             </form>
-
         </div>
         {% endif %}
     </div>
@@ -128,15 +157,60 @@
     <!-- DataTables JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-
     <script>
-        $(document).ready(function () {
-            // Initialize DataTables with pagination
-            $('#csvTable').DataTable({
-                "paging": false,
-                "searching": true,
-                "ordering": true
-            });
+    $(document).ready(function () {
+        $('#csvTable').DataTable({
+            "paging": false,  // Enable pagination
+            "pageLength": 10,  // Items per page
+            "lengthChange": false,  // Disable page length dropdown
+            "searching": true,  // Enable search
+            "ordering": true,  // Enable column ordering
+            "info": false,  // Hide table info (e.g., "Showing 1 to 10 of 57 entries")
+            "initComplete": function () {
+                    // Style the search input using Tailwind CSS classes
+                    let searchBox = $('#csvTable_filter input');
+                    searchBox.addClass('border border-gray-300 my-2 mx-1 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent');
+
+                    // Style the search label
+                    let searchLabel = $('#csvTable_filter label');
+                    searchLabel.addClass('block text-gray-700 font-medium mb-2');
+                }
+        });
+    });
+    </script>
+    <script>
+        const dragArea = document.getElementById("drag-area");
+        const fileInput = document.getElementById("file-input");
+        const dragText = document.getElementById("drag-text");
+
+        // Handle drag over event
+        dragArea.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dragArea.classList.add("dragover");
+        });
+
+        dragArea.addEventListener("dragleave", () => {
+            dragArea.classList.remove("dragover");
+        });
+
+        // Handle file drop event
+        dragArea.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dragArea.classList.remove("dragover");
+
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                fileInput.files = files;  // Set the file input with the dropped files
+                dragText.textContent = `File selected: ${files[0].name}`;
+            }
+        });
+
+        // Handle file selection through the button
+        fileInput.addEventListener("change", (e) => {
+            const file = fileInput.files[0];
+            if (file) {
+                dragText.textContent = `File selected: ${file.name}`;
+            }
         });
     </script>
 </body>
