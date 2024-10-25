@@ -16,7 +16,18 @@
             <input type="text" name="username" id="username" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"><br><br>
             <label for="password" class="block text-gray-700" autocomplete="off">Password:</label>
             <input type="password" name="password" id="password" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"><br><br>
-            <input type="submit" value="Register" class="bg-green-500 text-white font-bold px-4 py-2 hover:bg-green-600 rounded focus:outline-none focus:shadow-outline cursor-pointer">
+            {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                {% if category == 'register' %}
+                  <div class="text-red-500">
+                    {{ message }}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <input type="submit" value="Register" class="bg-green-500 text-white font-bold px-4 py-2 my-2 hover:bg-green-600 rounded focus:outline-none focus:shadow-outline cursor-pointer">
             </div>
         </form>
     <p>Already have an account? <a href="{{ url_for('login') }}" class="text-green-500 hover:underline">Login here</a></p>

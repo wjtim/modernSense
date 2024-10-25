@@ -67,10 +67,10 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             login_user(user)
-            flash("Logged in successfully!")
+            flash("Logged in successfully!", "login")
             return redirect(url_for("home"))
         else:
-            flash("Invalid username or password")
+            flash("Invalid username or password", "login")
     return render_template("login.html")
 
 @app.route("/register", methods=["GET", "POST"])
@@ -81,13 +81,13 @@ def register():
         username = request.form['username']
         password = request.form['password']
         if User.query.filter_by(username=username).first():
-            flash("Username already exists")
+            flash("Username already exists", "register")
         else:
             new_user = User(username=username)
             new_user.set_password(password)
             db.session.add(new_user)
             db.session.commit()
-            flash("Registered successfully! Please log in.")
+            flash("Registered successfully! Please log in.", "register")
             return redirect(url_for("login"))
     return render_template("register.html")
 
@@ -148,9 +148,17 @@ def upload_file():
         df = pd.read_csv(io.StringIO(file_content))
         # Check for required columns
         if 'review' not in df.columns or 'rating' not in df.columns:
-            print("CSV must contain 'review' and 'rating' columns.")
+            flash("CSV must contain 'review' and 'rating' columns.", "csv_error")
             return redirect(url_for("input"))
         
+        if df.shape[0] > 10:  # More than 10 rows
+            print("File has more than 10 rows. Please upload a smaller file.")
+            flash("File has more than 10 rows. Please upload a smaller file.", "csv_error")
+            return redirect(url_for("input"))
+        if df.shape[1] > 2:
+            print("Limit your files columns to only Rating and Review.")
+            flash("Limit your files columns to only Rating and Review.", "csv_error")
+            return redirect(url_for("input"))
         # Process reviews and ratings
         df['expected_rating'] = df['review'].apply(lambda x: scoring_analyzer(x)[0]['label'])
         df['rating_confidence'] = round(df['review'].apply(lambda x: scoring_analyzer(x)[0]['score']*100), 2)
@@ -174,7 +182,7 @@ def upload_file():
 
         return render_template("input.html", columns=columns, rows=rows, stats=stats)
     
-    print("No file uploaded or file format is incorrect.")
+    flash("No file uploaded or file format is incorrect.", "csv_error")
     return redirect(url_for("input"))
 
 @app.route('/download_csv')

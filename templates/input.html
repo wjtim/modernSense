@@ -38,6 +38,12 @@
         .drag-area.dragover {
             background-color: #d1d5db; /* Tailwind gray-300 */
         }
+
+        .drag-area.file-selected {
+            background-color: #d1fae5; /* Lighter green background */
+            color: #065f46; /* Tailwind teal-800 */
+            border-color: #34d399; /* Tailwind green-400 */
+        }
     </style>
 </head>
 
@@ -73,8 +79,19 @@
                 <label for="file-input" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer">Choose File</label>
                 <input id="file-input" type="file" name="file" accept=".csv" class="hidden-input" required>
             </div>
+            {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                {% if category == 'csv_error' %}
+                  <div class="text-center text-red-500">
+                    {{ message }}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+            {% endwith %}
             <div class="text-center">
-                <input type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer" value="Upload CSV">
+                <input type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 my-2 rounded focus:outline-none focus:shadow-outline cursor-pointer" value="Upload CSV">
             </div>
         </form>
 
@@ -193,10 +210,12 @@
         dragArea.addEventListener("dragover", (e) => {
             e.preventDefault();
             dragArea.classList.add("dragover");
+            dragText.textContent = "You're almost there! Drop to upload your file.";
         });
 
         dragArea.addEventListener("dragleave", () => {
             dragArea.classList.remove("dragover");
+            dragText.textContent = "Drop your file here or click below to select. Let’s analyze some data together!";
         });
 
         // Handle file drop event
@@ -207,7 +226,8 @@
             const files = e.dataTransfer.files;
             if (files.length) {
                 fileInput.files = files;  // Set the file input with the dropped files
-                dragText.textContent = `File selected: ${files[0].name}`;
+                dragArea.classList.add("file-selected"); // Add file-selected styling
+                dragText.textContent = `Great choice! Ready to analyze: ${files[0].name}`;
             }
         });
 
@@ -216,6 +236,7 @@
             const file = fileInput.files[0];
             if (file) {
                 dragText.textContent = `File selected: ${file.name}`;
+                dragArea.classList.add("file-selected"); // Add file-selected styling
             }
         });
     </script>
