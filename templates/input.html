@@ -5,9 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentiment Analysis</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/tailwindcss@^2.0/dist/tailwind.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Custom Style for Drag and Drop*/
         /* Hide the default file input */
@@ -177,69 +178,16 @@
         </p>
         <p>&copy; 2024 ModernSense. All rights reserved.</p>
     </footer>
-    <!-- DataTables JS -->
+
+    <!-- Scripts -->
+    <!-- jQuery and DataTables JS (required for DataTables) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script>
-    $(document).ready(function () {
-        $('#csvTable').DataTable({
-            "paging": false,  // Enable pagination
-            "pageLength": 10,  // Items per page
-            "lengthChange": false,  // Disable page length dropdown
-            "searching": true,  // Enable search
-            "ordering": true,  // Enable column ordering
-            "info": false,  // Hide table info (e.g., "Showing 1 to 10 of 57 entries")
-            "initComplete": function () {
-                    // Style the search input using Tailwind CSS classes
-                    let searchBox = $('#csvTable_filter input');
-                    searchBox.addClass('border border-gray-300 my-2 mx-1 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent');
-
-                    // Style the search label
-                    let searchLabel = $('#csvTable_filter label');
-                    searchLabel.addClass('block text-gray-700 font-medium mb-2');
-                }
-        });
-    });
-    </script>
-    <script>
-        const dragArea = document.getElementById("drag-area");
-        const fileInput = document.getElementById("file-input");
-        const dragText = document.getElementById("drag-text");
-
-        // Handle drag over event
-        dragArea.addEventListener("dragover", (e) => {
-            e.preventDefault();
-            dragArea.classList.add("dragover");
-            dragText.textContent = "You're almost there! Drop to upload your file.";
-        });
-
-        dragArea.addEventListener("dragleave", () => {
-            dragArea.classList.remove("dragover");
-            dragText.textContent = "Drop your file here or click below to select. Let’s analyze some data together!";
-        });
-
-        // Handle file drop event
-        dragArea.addEventListener("drop", (e) => {
-            e.preventDefault();
-            dragArea.classList.remove("dragover");
-
-            const files = e.dataTransfer.files;
-            if (files.length) {
-                fileInput.files = files;  // Set the file input with the dropped files
-                dragArea.classList.add("file-selected"); // Add file-selected styling
-                dragText.textContent = `Great choice! Ready to analyze: ${files[0].name}`;
-            }
-        });
-
-        // Handle file selection through the button
-        fileInput.addEventListener("change", (e) => {
-            const file = fileInput.files[0];
-            if (file) {
-                dragText.textContent = `File selected: ${file.name}`;
-                dragArea.classList.add("file-selected"); // Add file-selected styling
-            }
-        });
-    </script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    
+    <!-- Include Custom JS Files -->
+    <script src="{{ url_for('static', filename='js/table-script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chart-script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dragdrop-script.js') }}"></script>
 </body>
 
 </html>
