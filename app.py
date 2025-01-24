@@ -4,6 +4,9 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from flask_cors import CORS
 from transformers import pipeline
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer
+from markupsafe import Markup
 from dotenv import load_dotenv
 import pandas as pd
 import io
@@ -16,6 +19,14 @@ load_dotenv()
 #App configs from environment variables
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('DATABASE_URL')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+# Email configuration for SendGrid
+app.config['MAIL_SERVER'] = 'smtp.sendgrid.net'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'apikey'
+app.config['MAIL_PASSWORD'] = os.environ.get('SENDGRID_API_KEY')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
 
 #SQLAlchemy setup
 db = SQLAlchemy(app)
@@ -31,11 +42,19 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+#Mail setup
+mail = Mail(app)
+
+# Token serializer for email verification
+s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+
 #User Models
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(150), nullable=False)
+    is_verified = db.Column(db.Boolean, default=False)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -52,6 +71,39 @@ with app.app_context():
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
+# Helper function to send verification email
+def send_verification_email(user_email):
+    token = s.dumps(user_email, salt='email-confirm')
+    verification_url = url_for('verify_email', token=token, _external=True)
+    msg = Message("Email Verification", recipients=[user_email])
+    msg.html = Markup(f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
+            <div style="background-color: #22c55e; color: #ffffff; padding: 20px; text-align: center;">
+                <h2>Welcome to ModernSense!</h2>
+            </div>
+            <div style="padding: 30px;">
+                <p>Welcome to ModernSense,</p>
+                <p>Please confirm your email address to complete your registration.</p>
+                <p>Click the button below to verify your email:</p>
+                <p style="text-align: center;">
+                    <a href="{verification_url}" style="background-color: #22c55e; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 4px; font-weight: bold;">Verify Email</a>
+                </p>
+                <p>If the button doesn't work, you can also verify by clicking this link:</p>
+                <p style="text-align: center;"><a href="{verification_url}">{verification_url}</a></p>
+                <p>Thank you,<br>The ModernSense Team</p>
+            </div>
+            <div style="background-color: #f4f4f4; color: #888888; padding: 10px; text-align: center; font-size: 12px;">
+                <p>This email was sent to you by ModernSense sentiment analysis. If you did not register, please ignore this message.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """)
+    mail.send(msg)
+
 #CSV Filetype verification method
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'csv'}
@@ -66,9 +118,11 @@ def login():
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
-            login_user(user)
-            flash("Logged in successfully!", "login")
-            return redirect(url_for("home"))
+            if user.is_verified:
+                login_user(user)
+                return redirect(url_for("home"))
+            else:
+                flash("Please verify your email before logging in.", "login")
         else:
             flash("Invalid username or password", "login")
     return render_template("login.html")
@@ -79,17 +133,36 @@ def register():
         return redirect(url_for('home'))
     if request.method == "POST":
         username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
         if User.query.filter_by(username=username).first():
             flash("Username already exists", "register")
+        elif User.query.filter_by(email=email).first():
+            flash("Email already registered", "register")
         else:
-            new_user = User(username=username)
+            new_user = User(username=username, email=email)
             new_user.set_password(password)
             db.session.add(new_user)
             db.session.commit()
-            flash("Registered successfully! Please log in.", "register")
+            send_verification_email(email)
+            flash("Registered successfully! Please check your email to verify your account.", "login_success")
             return redirect(url_for("login"))
     return render_template("register.html")
+
+# Route to verify email
+@app.route('/verify_email/<token>')
+def verify_email(token):
+    try:
+        email = s.loads(token, salt='email-confirm', max_age=3600)  # Token expires in 1 hour
+        user = User.query.filter_by(email=email).first()
+        if user:
+            user.is_verified = True
+            db.session.commit()
+            flash("Your email has been verified. You can now log in.", "verify")
+            return redirect(url_for('login'))
+    except:
+        flash("The verification link is invalid or has expired.", "verify")
+        return redirect(url_for('register'))
 
 @app.route("/logout")
 @login_required

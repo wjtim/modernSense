@@ -24,6 +24,11 @@
                         {{ message }}
                       </div>
                     {% endif %}
+                    {% if category == 'login_success' %}
+                      <div class="text-green-500">
+                        {{ message }}
+                      </div>
+                    {% endif %}
                   {% endfor %}
                 {% endif %}
                 {% endwith %}

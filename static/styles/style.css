@@ -115,3 +115,15 @@ form {
 .result th {
     background-color: #f4f4f4;
 }
+
+.progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 4px;
+    background-color: #4CAF50;
+    width: 0%;
+    z-index: 9999;
+    transition: width 0.25s ease-out;
+}
+
