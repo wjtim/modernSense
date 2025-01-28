@@ -32,9 +32,10 @@
                   {% endfor %}
                 {% endif %}
                 {% endwith %}
-                <input type="submit" value="Login" class="bg-green-500 text-white font-bold px-4 py-2 my-2 hover:bg-green-600 rounded focus:outline-none focus:shadow-outline cursor-pointer">
+                <input type="submit" value="Login" class="bg-green-500 text-white font-bold px-4 py-2 my-2 hover:bg-green-600 rounded focus:shadow-outline cursor-pointer">
             </div>
         </form>
+    <p><a href="{{ url_for('forgot_password') }}" class="text-green-500 hover:underline">Forgot your password?</a></p>
     <p>Don't have an account? <a href="{{ url_for('register') }}" class="text-green-500 hover:underline">Register here</a></p>
     </div>
 </body>

@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import pandas as pd
 import io
 import os
+import re
 
 app = Flask(__name__)
 CORS(app)
@@ -104,6 +105,36 @@ def send_verification_email(user_email):
     """)
     mail.send(msg)
 
+# Helper function to send password reset email
+def send_reset_email(user_email):
+    token = s.dumps(user_email, salt='password-reset')
+    reset_url = url_for('reset_password', token=token, _external=True)
+    msg = Message("Password Reset Request", recipients=[user_email])
+    msg.html = Markup(f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
+            <div style="background-color: #22c55e; color: #ffffff; padding: 20px; text-align: center;">
+                <h2>Reset Your Password</h2>
+            </div>
+            <div style="padding: 30px;">
+                <p>You requested a password reset. Click the button below to reset your password:</p>
+                <p style="text-align: center;">
+                    <a href="{reset_url}" style="background-color: #22c55e; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 4px; font-weight: bold;">Reset Password</a>
+                </p>
+                <p>If the button doesn't work, you can also reset your password by clicking this link:</p>
+                <p style="text-align: center;"><a href="{reset_url}">{reset_url}</a></p>
+                <p>If you didn't request this, please ignore this email.</p>
+            </div>
+            <div style="background-color: #f4f4f4; color: #888888; padding: 10px; text-align: center; font-size: 12px;">
+                <p>This email was sent by ModernSense sentiment analysis.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """)
+    mail.send(msg)
+
 #CSV Filetype verification method
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'csv'}
@@ -135,7 +166,14 @@ def register():
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
-        if User.query.filter_by(username=username).first():
+        # Email regex pattern
+        email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+        password_regex = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+        if not re.match(email_regex, email):
+            flash("Invalid email address", "register")
+        elif not re.match(password_regex, password):
+            flash("Password must be at least 8 characters long, include at least one letter, one number, and one special character", "register")
+        elif User.query.filter_by(username=username).first():
             flash("Username already exists", "register")
         elif User.query.filter_by(email=email).first():
             flash("Email already registered", "register")
@@ -158,11 +196,51 @@ def verify_email(token):
         if user:
             user.is_verified = True
             db.session.commit()
-            flash("Your email has been verified. You can now log in.", "verify")
+            flash("Your email has been verified. You can now log in.", "login_success")
             return redirect(url_for('login'))
     except:
         flash("The verification link is invalid or has expired.", "verify")
         return redirect(url_for('register'))
+
+# Route to request password reset
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form['email']
+        user = User.query.filter_by(email=email).first()
+        if user:
+            send_reset_email(email)
+            flash("A password reset link has been sent to your email.", "reset")
+        else:
+            flash("No account found with that email.", "reset")
+    return render_template('forgot_password.html')
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        email = s.loads(token, salt='password-reset', max_age=3600)  # Token expires in 1 hour
+    except:
+        flash("The reset link is invalid or has expired.", "error")
+        return redirect(url_for('forgot_password'))
+    
+    if request.method == 'POST':
+        new_password = request.form['password']
+        confirm_password = request.form["confirm_password"]
+
+        if new_password != confirm_password:
+            flash("Passwords do not match", "reset")
+        elif not re.match(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$', new_password):
+            flash("Password must be at least 8 characters long, include a letter, a number, and a special character", "reset")
+        else:
+            user = User.query.filter_by(email=email).first()
+            if user:
+                user.set_password(new_password)
+                db.session.commit()
+                flash("Your password has been updated. You can now log in.", "login_success")
+                return redirect(url_for('login'))
+            else:
+                flash("Internal server error, user not found. Contact Support", "reset")
+    return render_template('reset_password.html', token=token)
 
 @app.route("/logout")
 @login_required
