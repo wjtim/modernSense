@@ -9,103 +9,116 @@
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <!-- Header -->
-    <header class="bg-green-600 text-white py-6 shadow-lg">
-        <div class="container mx-auto text-center">
-            <h1 class="text-4xl font-bold">ModernSense</h1>
-            <p class="mt-2 text-lg">Find out how your customers really feel</p>
-        </div>
-    </header>
-    <!-- Main Content -->
-    <main class="container mx-auto py-8">
-        <!-- Greeting -->
-        <section class="mb-8 text-center">
-            {% if current_user.is_authenticated %}
-            <p class="text-xl mb-4">Hello, <span class="font-bold">{{ current_user.username }}</span>!</p>
-            <form action="{{ url_for('input') }}">
-                <input type="submit" value="Start Analysis" class="bg-green-500 text-white font-bold px-4 py-2 hover:bg-green-600 rounded focus:outline-none focus:shadow-outline cursor-pointer">
-            </form>
-            <form class="logout my-2 mb-6" action="{{ url_for('logout') }}">
-                <input type="submit" class="bg-red-500 text-white font-bold py-2 px-4 hover:bg-red-600 rounded focus:outline-none focus:shadow-outline cursor-pointer" value="Logout">
-            </form>
-            {% else %}
-            <strong class="text-xl mb-4">Already have an account?</strong>
-            <form action="{{ url_for('login') }}">
-                <input type="submit" value="Login" class="bg-green-500 text-white font-bold px-4 py-2 hover:bg-green-600 rounded focus:outline-none focus:shadow-outline cursor-pointer">
-            </form>
-            <strong class="text-xl mb-4">or</strong>
-            <form action="{{ url_for('register') }}">
-                <input type="submit" value="Register" class="bg-green-400 text-white font-bold px-4 py-2 hover:bg-green-600 rounded focus:outline-none focus:shadow-outline cursor-pointer">
-            </form>
-            <strong class="text-xl mb-4">if you dont already have an account!</strong>
-            {% endif %}
-        </section>
+  <!-- Header -->
+  <header class="bg-gray-800 shadow-2xl rounded-lg my-6 mx-6 px-6 py-4 flex items-center justify-between">
+    <!-- Left: Logo & Title -->
+    <div class="flex items-center space-x-4">
+        <img src="../static/images/android-chrome-512x512.png" alt="Logo" class="h-12 w-12">
+        <h1 class="text-3xl font-extrabold text-white">ModernSense</h1>
+    </div>
 
-        <!-- About Section -->
-        <section id="intro" class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 class="text-2xl text-center font-semibold mb-4">What is ModernSense?</h2>
-            <p class="text-lg">ModernSense is a Machine Learning leveraged tool that will help you analyze user reviews and feedback quickly and effectively. Whether you are handling a single review or processing a batch of CSV files, ModernSense provides insights into sentiment and accuracy of your user reviews.</p>
-        </section>
+    <!-- Right: Navigation Links -->
+    <nav class="hidden md:flex space-x-6">
+        <a href="/" class="text-white hover:text-green-500 transition font-medium">Home</a>
+        <a href="#intro" class="text-white hover:text-green-500 transition font-medium">About</a>
+        <a href="#features" class="text-white hover:text-green-500 transition font-medium">Features</a>
+        <a href="#instructions" class="text-white hover:text-green-500 transition font-medium">Instructions</a>
+    </nav>
 
-        <!-- Features Section -->
-        <section id="features" class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 class="text-2xl text-center font-semibold mb-4">Features</h2>
-            <ul class="list-disc list-inside space-y-2">
-                <li><strong>Manual Review Input:</strong> Enter the rating given to you by your user as well as the review left to determine if the rating really matches what was said.</li>
-                <li><strong>Batch Processing:</strong> ModernSense can also digest CSV files with reviews for bulk analysis provided the formatting and number of reviews are within range.</li>
-                <li><strong>Sentiment Scores:</strong> Get insight into the confidence of the model on your reviews with sentiment and scoring confidence scores for each review.</li>
-                <li><strong>Download Results:</strong> CSV Uploads will be processed and returned so you can save your results and do your own analysis.</li>
-            </ul>
-        </section>
+    <!-- Mobile Menu Button -->
+    <button class="md:hidden text-gray-600 focus:outline-none">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7"></path>
+        </svg>
+    </button>
+  </header>
 
-        <!-- Instructions Section -->
-        <section id="instructions" class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 class="text-2xl text-center font-semibold mb-4">How to Use</h2>
-            <p class="text-center my-1">Upload a CSV file containing reviews for batch processing. The CSV must be formatted with 2 columns, <strong>reviews</strong> and <strong>ratings</strong> as shown below.</p>
-            <table class="min-w-full table-auto border-collapse border border-gray-300">
-            <!-- Table Headers -->
-            <thead class="bg-gray-200">
-              <tr>
-                <th class="px-4 py-2 border border-gray-300 text-gray-700 font-bold">Rating</th>
-                <th class="px-4 py-2 border border-gray-300 text-gray-700 font-bold">Review</th>
-              </tr>
-            </thead>
-            <!-- Table Body -->
-            <tbody>
-              <!-- Row 1 -->
-              <tr>
-                <td class="px-4 py-2 border border-gray-300">"The quality was extremely disappointing. The item broke after just one use, and the material feels cheap. Definitely not worth the price."</td>
-                <td class="px-4 py-2 border border-gray-300">1</td>
-              </tr>
-              <!-- Row 2 -->
-              <tr>
-                <td class="px-4 py-2 border border-gray-300">"Amazing product! Exceeded my expectations. The quality and functionality are top-notch, and it’s worth every penny. Highly recommend!"</td>
-                <td class="px-4 py-2 border border-gray-300">5</td>
-              </tr>
-              <tr>
-                <td class="px-4 py-2 border border-gray-300">"Perfect in every way! From the packaging to the performance, everything is flawless. I’ve already recommended it to friends and family."</td>
-                <td class="px-4 py-2 border border-gray-300">5</td>
-              </tr>
-              <tr>
-                <td class="px-4 py-2 border border-gray-300">"Very solid performance. There are a few areas where it could improve, but overall, it’s a good value for the money. Would buy again."</td>
-                <td class="px-4 py-2 border border-gray-300">5</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-4 text-center">
-        <h2 class="text-2xl font-semibold mb-4">Contact Us</h2>
-        <p class="text-lg">If you have any questions or need support, feel free to reach out to us at 
-            <a href="mailto:support@example.com" class="text-green-600 underline">modernsense.noreply@gmail.com</a>.
-        </p>
-        <p>&copy; 2024 ModernSense. All rights reserved.</p>
-    </footer>
-      <!-- Progress Bar (Scroll Tracking) -->
-    <div class="progress-bar fixed top-0 left-0 h-1 bg-green-300" style="width: 0;"></div>
-    <!-- JavaScript Files -->
-    <script src="{{ url_for('static', filename='js/scroll-progress.js') }}"></script>
+  <!-- Main Content -->
+  <main class="container mx-auto mt-2">
+      <!-- Greeting -->
+      <section class="mb-8 text-center">
+          {% if current_user.is_authenticated %}
+          <p class="text-xl mb-4">Hello, <span class="font-bold">{{ current_user.username }}</span>!</p>
+          <form action="{{ url_for('input') }}">
+              <input type="submit" value="Start Analysis" class="bg-green-500 text-white font-bold px-4 py-2 hover:bg-green-600 rounded focus:outline-none focus:shadow-outline cursor-pointer">
+          </form>
+          <form class="logout my-2 mb-6" action="{{ url_for('logout') }}">
+              <input type="submit" class="bg-red-500 text-white font-bold py-2 px-4 hover:bg-red-600 rounded focus:outline-none focus:shadow-outline cursor-pointer" value="Logout">
+          </form>
+          {% else %}
+          <strong class="text-xl mb-4">Already have an account?</strong>
+          <form action="{{ url_for('login') }}">
+              <input type="submit" value="Login" class="bg-green-500 text-white font-bold px-4 py-2 hover:bg-green-600 rounded focus:outline-none focus:shadow-outline cursor-pointer">
+          </form>
+          <strong class="text-xl mb-4">or</strong>
+          <form action="{{ url_for('register') }}">
+              <input type="submit" value="Register" class="bg-green-400 text-white font-bold px-4 py-2 hover:bg-green-600 rounded focus:outline-none focus:shadow-outline cursor-pointer">
+          </form>
+          <strong class="text-xl mb-4">if you haven't already!</strong>
+          {% endif %}
+      </section>
+      <!-- About Section -->
+      <section id="intro" class="bg-gray-800 p-6 text-white rounded-lg shadow-2xl mb-8">
+          <h2 class="text-2xl text-center font-semibold mb-4">What is ModernSense?</h2>
+          <p class="text-lg">ModernSense is a Machine Learning leveraged tool that will help you analyze user reviews and feedback quickly and effectively. Whether you are handling a single review or processing a batch of CSV files, ModernSense provides insights into sentiment and accuracy of your user reviews.</p>
+      </section>
+      <!-- Features Section -->
+      <section id="features" class="bg-gray-800 text-white p-6 rounded-lg shadow-2xl mb-8">
+          <h2 class="text-2xl text-center font-semibold mb-4">Features</h2>
+          <ul class="list-disc list-inside space-y-2">
+              <li><strong>Manual Review Input:</strong> Enter the rating given to you by your user as well as the review left to determine if the rating really matches what was said.</li>
+              <li><strong>Batch Processing:</strong> ModernSense can also digest CSV files with reviews for bulk analysis provided the formatting and number of reviews are within range.</li>
+              <li><strong>Sentiment Scores:</strong> Get insight into the confidence of the model on your reviews with sentiment and scoring confidence scores for each review.</li>
+              <li><strong>Download Results:</strong> CSV Uploads will be processed and returned so you can save your results and do your own analysis.</li>
+          </ul>
+      </section>
+      <!-- Instructions Section -->
+      <section id="instructions" class="bg-gray-800 text-white p-6 rounded-lg shadow-2xl mb-8">
+          <h2 class="text-2xl text-center font-semibold mb-4">How to Use</h2>
+          <p class="text-center my-1">Upload a CSV file containing reviews for batch processing. The CSV must be formatted with 2 columns, <strong>review</strong> and <strong>rating</strong>, as shown below.</p>
+          <table class="min-w-full table-auto border-collapse border border-gray-300">
+          <!-- Table Headers -->
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="px-4 py-2 border border-gray-300 text-gray-700 font-bold">review</th>
+              <th class="px-4 py-2 border border-gray-300 text-gray-700 font-bold">rating</th>
+            </tr>
+          </thead>
+          <!-- Table Body -->
+          <tbody class="bg-white text-black">
+            <!-- Row 1 -->
+            <tr>
+              <td class="px-4 py-2 border border-gray-300">"The quality was extremely disappointing. The item broke after just one use, and the material feels cheap. Definitely not worth the price."</td>
+              <td class="px-4 py-2 border border-gray-300">1</td>
+            </tr>
+            <!-- Row 2 -->
+            <tr>
+              <td class="px-4 py-2 border border-gray-300">"Amazing product! Exceeded my expectations. The quality and functionality are top-notch, and it’s worth every penny. Highly recommend!"</td>
+              <td class="px-4 py-2 border border-gray-300">5</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2 border border-gray-300">"Perfect in every way! From the packaging to the performance, everything is flawless. I’ve already recommended it to friends and family."</td>
+              <td class="px-4 py-2 border border-gray-300">5</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2 border border-gray-300">"Very solid performance. There are a few areas where it could improve, but overall, it’s a good value for the money. Would buy again."</td>
+              <td class="px-4 py-2 border border-gray-300">5</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+  </main>
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-4 px-2 text-center">
+      <h2 class="text-2xl font-semibold mb-4">Contact Us</h2>
+      <p class="text-lg">If you have any questions or need support, feel free to reach out to 
+          <a href="mailto:support@example.com" class="text-green-600 underline">modernsense.noreply@gmail.com</a>.
+      </p>
+      <p>&copy; 2024 ModernSense. All rights reserved.</p>
+  </footer>
+    <!-- Progress Bar (Scroll Tracking) -->
+  <div class="progress-bar fixed top-0 left-0 h-1 bg-green-300" style="width: 0;"></div>
+  <!-- JavaScript Files -->
+  <script src="{{ url_for('static', filename='js/scroll-progress.js') }}"></script>
 </body>
 </html>

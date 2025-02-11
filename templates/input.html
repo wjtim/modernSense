@@ -33,15 +33,15 @@
         }
 
         .drag-area:hover {
-            background-color: #e5e7eb; /* Tailwind gray-200 */
+            background-color: #718096; /* Tailwind gray-200 */
         }
 
         .drag-area.dragover {
-            background-color: #d1d5db; /* Tailwind gray-300 */
+            background-color: #34d399; /* Tailwind gray-300 */
         }
 
         .drag-area.file-selected {
-            background-color: #d1fae5; /* Lighter green background */
+            background-color: #34d399; /* Lighter green background */
             color: #065f46; /* Tailwind teal-800 */
             border-color: #34d399; /* Tailwind green-400 */
         }
@@ -49,21 +49,38 @@
 </head>
 
 <body class="bg-gray-50 font-sans">
+    <header class="bg-gray-800 shadow-2xl rounded-lg my-6 mx-6 px-6 py-4 flex items-center justify-between">
+        <!-- Left: Logo & Title -->
+        <div class="flex items-center space-x-4">
+            <img src="../static/images/android-chrome-512x512.png" alt="Logo" class="h-12 w-12">
+            <h1 class="text-3xl font-extrabold text-white">ModernSense</h1>
+        </div>
+    
+        <!-- Right: Navigation Links -->
+        <nav class="hidden md:flex space-x-6">
+            <form class="logout text-left" action="{{ url_for('logout') }}">
+                <input type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer" value="Logout">
+            </form>
+        </nav>
+    
+        <!-- Mobile Menu Button -->
+        <button class="md:hidden text-gray-600 focus:outline-none">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7"></path>
+            </svg>
+        </button>
+      </header>
+
     <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold text-center text-green-600 mb-8">ModernSense</h1>
-        <!-- Logout Form -->
-        <form class="logout text-left mb-6" action="{{ url_for('logout') }}">
-            <input type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer" value="Logout">
-        </form>
         <!-- Analyzer Form -->
-        <form class="analyzer bg-white shadow-md rounded p-6 mb-6" method="post" action="{{ url_for('input') }}">
+        <form class="analyzer bg-gray-800 text-white shadow-md rounded p-6 mb-6" method="post" action="{{ url_for('input') }}">
             <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="rating">Rating Received (/5):</label>
+                <label class="block text-sm font-bold mb-2" for="rating">Rating Received (/5):</label>
                 <input class="rating shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" name="user_rating" type="number" min="0" max="5" placeholder="Rating Received /5" onkeyup="enforceMinMax(this)" required="required">
             </div>
 
             <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="review">Review:</label>
+                <label class="block text-sm font-bold mb-2" for="review">Review:</label>
                 <textarea class="review shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" name="user_input" rows="4" placeholder="Enter text here..." required="required"></textarea>
             </div>
 
@@ -73,9 +90,9 @@
         </form>
 
         <!-- File Upload Form -->
-        <form class="upload bg-white shadow-md rounded p-6 mb-6" method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+        <form class="upload bg-gray-800 shadow-md rounded p-6 mb-6" method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
             <div id="drag-area" class="drag-area">
-                <p id="drag-text" class="text-gray-600">Drag and Drop CSV Here</p>
+                <p id="drag-text" class="text-white">Drag and Drop CSV Here</p>
                 <p class="my-2"><strong>or</strong></p>
                 <label for="file-input" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer">Choose File</label>
                 <input id="file-input" type="file" name="file" accept=".csv" class="hidden-input" required>
@@ -98,7 +115,7 @@
 
         <!-- Results Section -->
         {% if sentiment_results and user_expected %}
-        <div class="results bg-white shadow-md rounded p-6">
+        <div class="results bg-gray-800 text-white shadow-md rounded p-6">
             {% if sentiment_results.scoring.label == user_expected.score %}
             <div class="expectedResult">
                 <h2 class="text-2xl font-semibold mb-4">Sentiment Scores</h2>
@@ -133,7 +150,7 @@
 
         <!-- Processed CSV Data -->
         {% if stats and columns and rows %}
-        <div class="csv-results bg-white shadow-md rounded-lg p-6 mt-6">
+        <div class="csv-results bg-gray-800 text-white shadow-md rounded-lg p-6 mt-6">
             <h1 class="text-2xl font-semibold mb-4">CSV Upload Results</h1>
             <!-- Stats -->
             <div class="mt-6">
@@ -143,7 +160,7 @@
                 <p>Average User Rating: {{ stats.average_rating }}</p>
             </div>
             <!-- Responsive table wrapper -->
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto bg-white px-2 py-2 rounded">
                 <table id="csvTable" class="table-auto w-full border-collapse border border-gray-200 text-left">
                     <thead class="bg-gray-50 text-gray-700">
                         <tr>
