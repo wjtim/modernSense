@@ -288,9 +288,6 @@ def upload_file():
     file = request.files.get('file')
     stats = {}
 
-    #Debug print line
-    print("Upload route taken")
-
     #Check file format of upload for CSV
     if file and allowed_file(file.filename):
         print("File received")
@@ -302,9 +299,9 @@ def upload_file():
             flash("CSV must contain 'review' and 'rating' columns.", "csv_error")
             return redirect(url_for("input"))
         
-        if df.shape[0] > 10:  # More than 10 rows
-            print("File has more than 10 rows. Please upload a smaller file.")
-            flash("File has more than 10 rows. Please upload a smaller file.", "csv_error")
+        if df.shape[0] > 25:  # More than 10 rows
+            print("File has more than 25 rows. Please upload a smaller file.")
+            flash("File has more than 25 rows. Please upload a smaller file.", "csv_error")
             return redirect(url_for("input"))
         if df.shape[1] > 2:
             print("Limit your files columns to only Rating and Review.")

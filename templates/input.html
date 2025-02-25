@@ -53,7 +53,7 @@
         <!-- Left: Logo & Title -->
         <div class="flex items-center space-x-4">
             <img src="../static/images/android-chrome-512x512.png" alt="Logo" class="h-12 w-12">
-            <h1 class="text-3xl font-extrabold text-white">ModernSense</h1>
+            <h1 class="hidden md:flex text-3xl font-extrabold text-white">ModernSense</h1>
         </div>
     
         <!-- Right: Navigation Links -->
@@ -65,9 +65,9 @@
     
         <!-- Mobile Menu Button -->
         <button class="md:hidden text-gray-600 focus:outline-none">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7"></path>
-            </svg>
+            <form class="logout text-left" action="{{ url_for('logout') }}">
+                <input type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer" value="Logout">
+            </form>
         </button>
       </header>
 
@@ -89,8 +89,75 @@
             </div>
         </form>
 
+        <!-- Results Section -->
+        {% if sentiment_results and user_expected %}
+        <div class="results bg-gray-800 text-white shadow-lg rounded-lg p-6 mx-auto">
+            <h2 class="text-3xl font-bold mb-4 text-center">Sentiment Analysis Results</h2>
+            {% if sentiment_results.scoring.label in user_expected.score %}
+            <div class="grid grid-cols-2 gap-6 p-4 border rounded-lg border-green-500">
+                <div>
+                    <h3 class="text-xl font-semibold mb-2">Model Prediction</h3>
+                    <strong class="text-green-400">{{ sentiment_results.scoring.label }}</strong>
+                    <p><strong>Confidence:</strong> <strong>{{ sentiment_results.scoring.score | float | round(2) }} / 1</strong></p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-2">User Input</h3>
+                    <strong class="text-green-400">{{ user_expected.score }}</strong>
+                </div>
+            </div>
+            {% else %}
+            <div class="grid grid-cols-2 gap-6 p-4 border rounded-lg border-red-500">
+                <div>
+                    <h3 class="text-xl font-semibold mb-2">Model Prediction</h3>
+                    <strong class="text-red-400">{{ sentiment_results.scoring.label }}</strong>
+                    <p><strong>Confidence:</strong> <strong>{{ sentiment_results.scoring.score | float | round(2) }} / 1</strong></p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-2">User Input</h3>
+                    <strong class="text-red-400">{{ user_expected.score }}</strong>
+                </div>
+            </div>
+            {% endif %}
+        
+            {% if user_expected.score.startswith('3') and sentiment_results.sentiment.label == 'POSITIVE' and sentiment_results.sentiment.score | float %}
+            <div class="mt-6 p-4 border rounded-lg border-grey-500">
+                <h3 class="text-xl font-semibold mb-2">Neutral Rating</h3>
+                <p class="text-grey-400">This is a neutral rating with positive sentiment.</p>
+                <p>Sentiment: <strong class="text-green-400">{{ sentiment_results.sentiment.label }}</strong></p>
+                <p>Confidence: <strong>{{ sentiment_results.sentiment.score | float | round(2) }} / 1</strong></p>
+            </div>
+            {% elif (user_expected.score.startswith('4') or user_expected.score.startswith('5')) and sentiment_results.sentiment.label == 'POSITIVE' %}
+            <div class="mt-6 p-4 border rounded-lg border-green-500">
+                <h3 class="text-xl font-semibold mb-2">Sentiment Analysis</h3>
+                <p>Sentiment: <strong class="text-green-400">{{ sentiment_results.sentiment.label }}</strong></p>
+                <p>Confidence: <strong>{{ sentiment_results.sentiment.score | float | round(2) }} / 1</strong></p>
+            </div>
+            {% elif (user_expected.score.startswith('1') or user_expected.score.startswith('2')) and sentiment_results.sentiment.label == 'POSITIVE' %}
+            <div class="mt-6 p-4 border rounded-lg border-yellow-500">
+                <h3 class="text-xl font-semibold mb-2">Sentiment Analysis Warning</h3>
+                <p>Sentiment: <strong class="text-yellow-400">{{ sentiment_results.sentiment.label }}</strong></p>
+                <p>Confidence: <strong>{{ sentiment_results.sentiment.score | float | round(2) }} / 1</strong></p>
+                <p class="text-yellow-400">Positive sentiment detected despite low user rating.</p>
+            </div>
+            {% elif (user_expected.score.startswith('4') or user_expected.score.startswith('5')) and sentiment_results.sentiment.label == 'NEGATIVE' %}
+            <div class="mt-6 p-4 border rounded-lg border-yellow-500">
+                <h3 class="text-xl font-semibold mb-2">Sentiment Analysis Warning</h3>
+                <p>Sentiment: <strong class="text-yellow-400">{{ sentiment_results.sentiment.label }}</strong></p>
+                <p>Confidence: <strong>{{ sentiment_results.sentiment.score | float | round(2) }} / 1</strong></p>
+                <p class="text-yellow-400">Negative sentiment detected despite high user rating.</p>
+            </div>
+            {% else %}
+            <div class="mt-6 p-4 border rounded-lg border-grey-500">
+                <h3 class="text-xl font-semibold mb-2">Neutral Rating</h3>
+                <p class="text-grey-400">This is a neutral rating with negative sentiment.</p>
+                <p>Sentiment: <strong class="text-red-400">{{ sentiment_results.sentiment.label }}</strong></p>
+                <p>Confidence: <strong>{{ sentiment_results.sentiment.score | float | round(2) }} / 1</strong></p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
         <!-- File Upload Form -->
-        <form class="upload bg-gray-800 shadow-md rounded p-6 mb-6" method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+        <form class="upload bg-gray-800 shadow-md rounded p-6 my-6" method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
             <div id="drag-area" class="drag-area">
                 <p id="drag-text" class="text-white">Drag and Drop CSV Here</p>
                 <p class="my-2"><strong>or</strong></p>
@@ -113,51 +180,16 @@
             </div>
         </form>
 
-        <!-- Results Section -->
-        {% if sentiment_results and user_expected %}
-        <div class="results bg-gray-800 text-white shadow-md rounded p-6">
-            {% if sentiment_results.scoring.label == user_expected.score %}
-            <div class="expectedResult">
-                <h2 class="text-2xl font-semibold mb-4">Sentiment Scores</h2>
-                <p><strong>Model:</strong> nlptown/bert-base-multilingual-uncased-sentiment</p>
-                <p>Model Expected Rating: <strong class="text-green-500">{{ sentiment_results.scoring.label }}</strong></p>
-                <p>Confidence: <strong>{{ sentiment_results.scoring.score }} / 1</strong></p>
-
-                <p><strong>Model:</strong> distilbert-base-uncased-finetuned-sst-2-english</p>
-                <p>Sentiment: <strong>{{ sentiment_results.sentiment.label }}</strong></p>
-                <p>Confidence: <strong>{{ sentiment_results.sentiment.score }} / 1</strong></p>
-
-                <h2 class="text-2xl font-semibold mt-6">User Received Scores</h2>
-                <p>Received Score: <strong class="text-green-500">{{user_expected.score}}</strong></p>
-            </div>
-            {% else %}
-            <div class="badResult">
-                <h2 class="text-2xl font-semibold mb-4">Sentiment Scores</h2>
-                <p><strong>Model:</strong> nlptown/bert-base-multilingual-uncased-sentiment</p>
-                <p>Model Expected Rating: <strong class="text-red-500">{{ sentiment_results.scoring.label }}</strong></p>
-                <p>Confidence: <strong>{{ sentiment_results.scoring.score }} / 1</strong></p>
-
-                <p><strong>Model:</strong> distilbert-base-uncased-finetuned-sst-2-english</p>
-                <p>Sentiment: <strong class="text-red-500">{{ sentiment_results.sentiment.label }}</strong></p>
-                <p>Confidence: <strong>{{ sentiment_results.sentiment.score }} / 1</strong></p>
-
-                <h2 class="text-2xl font-semibold mt-6">User Received Scores</h2>
-                <p>Received User Rating: <strong class="text-red-500">{{user_expected.score}}</strong></p>
-            </div>
-            {% endif %}
-        </div>
-        {% endif %}
-
         <!-- Processed CSV Data -->
         {% if stats and columns and rows %}
         <div class="csv-results bg-gray-800 text-white shadow-md rounded-lg p-6 mt-6">
             <h1 class="text-2xl font-semibold mb-4">CSV Upload Results</h1>
             <!-- Stats -->
-            <div class="mt-6">
+            <div class="mt-6 mb-4">
                 <h2 class="text-xl font-semibold">Statistics:</h2>
-                <p>Average Model Score Confidence: {{ stats.nlptown_avg_score }}</p>
-                <p>Average Sentiment Confidence: {{ stats.distilbert_avg_score }}</p>
-                <p>Average User Rating: {{ stats.average_rating }}</p>
+                <p><strong>Average User Rating</strong>: {{ stats.average_rating }}</p>
+                <p><strong>Average Model Score Confidence</strong>: {{ stats.nlptown_avg_score }}</p>
+                <p><strong>Average Sentiment Confidence</strong>: {{ stats.distilbert_avg_score }}</p>
             </div>
             <!-- Responsive table wrapper -->
             <div class="overflow-x-auto bg-white px-2 py-2 rounded">
@@ -188,10 +220,10 @@
         </div>
         {% endif %}
     </div>
-    <footer class="bg-gray-800 text-white py-4 text-center">
+    <footer class="bg-gray-800 text-white py-4 px-2 text-center">
         <h2 class="text-2xl font-semibold mb-4">Contact Us</h2>
         <p class="text-lg">If you have any questions or need support, feel free to reach out to us at 
-            <a href="mailto:support@example.com" class="text-green-600 underline">modernsense.noreply@gmail.com</a>.
+            <a href="mailto:modernsense.noreply@gmail.com" class="text-green-600 underline">modernsense.noreply@gmail.com</a>.
         </p>
         <p>&copy; 2024 ModernSense. All rights reserved.</p>
     </footer>
