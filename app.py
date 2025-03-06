@@ -277,7 +277,6 @@ def input():
         user_expected = {
             "score": user_rating + " stars"
         }
-        print(user_input)
     return render_template("input.html", sentiment_results=sentiment_results, user_expected=user_expected)
 
 @app.route("/upload", methods=["GET", "POST"])
@@ -290,7 +289,6 @@ def upload_file():
 
     #Check file format of upload for CSV
     if file and allowed_file(file.filename):
-        print("File received")
         # Read and process CSV file
         file_content = file.read().decode('utf-8')
         df = pd.read_csv(io.StringIO(file_content))
@@ -300,11 +298,9 @@ def upload_file():
             return redirect(url_for("input"))
         
         if df.shape[0] > 25:  # More than 10 rows
-            print("File has more than 25 rows. Please upload a smaller file.")
             flash("File has more than 25 rows. Please upload a smaller file.", "csv_error")
             return redirect(url_for("input"))
         if df.shape[1] > 2:
-            print("Limit your files columns to only Rating and Review.")
             flash("Limit your files columns to only Rating and Review.", "csv_error")
             return redirect(url_for("input"))
         # Process reviews and ratings
@@ -347,9 +343,8 @@ def download_csv():
             download_name='analysed_reviews.csv'
         )
     else:
-        print("CSV Data not found")
         flash("No CSV available for download.")
         return redirect(url_for("input"))
     
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
