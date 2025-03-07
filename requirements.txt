@@ -12,3 +12,4 @@ Werkzeug==2.2.3
 torch
 numpy<2
 gunicorn
+psycopg2
